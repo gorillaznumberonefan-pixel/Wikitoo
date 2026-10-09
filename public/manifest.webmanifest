@@ -1,0 +1,10 @@
+{
+  "name": "Wikitoo",
+  "short_name": "Wikitoo",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020817",
+  "theme_color": "#0f172a",
+  "description": "Wikitoo — a public wiki with peer review and editor permissions.",
+  "icons": []
+}
