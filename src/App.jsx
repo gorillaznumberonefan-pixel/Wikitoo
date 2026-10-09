@@ -1,12 +1,21 @@
 import { Routes, Route, Link, NavLink, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { articles, editorRequests, editors, reviewQueue } from './data/mockData';
 
 function Header() {
+  const [theme, setTheme] = useState(() => localStorage.getItem('wikitoo-theme') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('wikitoo-theme', theme);
+  }, [theme]);
+
   return (
     <header className="topbar">
       <div className="container nav-shell">
-        <Link to="/" className="brand">
-          Wikitoo
+        <Link to="/" className="brand-wrap">
+          <span className="brand-mark">W</span>
+          <span className="brand">Wikitoo</span>
         </Link>
 
         <nav className="nav" aria-label="Main navigation">
@@ -16,6 +25,15 @@ function Header() {
           <NavLink to="/admin">Admin</NavLink>
           <NavLink to="/request-editor">Request Editor</NavLink>
         </nav>
+
+        <button
+          type="button"
+          className="theme-toggle"
+          onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
+          aria-label="Toggle theme"
+        >
+          {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
+        </button>
       </div>
     </header>
   );
@@ -32,11 +50,11 @@ function HomePage() {
   return (
     <main className="container page-space">
       <section className="hero">
-        <p className="eyebrow">Public wiki</p>
-        <h1>Explore verified knowledge.</h1>
+        <p className="eyebrow">Public wiki • reviewed by editors</p>
+        <h1>Verified knowledge for curious minds.</h1>
         <p className="hero-copy">
-          Wikitoo is built for well-sourced thinking, peer-reviewed content, and clean,
-          easy browsing across topics.
+          Wikitoo is a public knowledge base built around clear explanations, cited sources,
+          editorial review, and fast discovery across topics.
         </p>
         <div className="hero-actions">
           <Link to="/request-editor" className="primary-btn">
@@ -52,13 +70,16 @@ function HomePage() {
         <label htmlFor="search" className="sr-only">
           Search articles
         </label>
-        <input id="search" type="search" placeholder="Search articles by title or topic" />
+        <input id="search" type="search" placeholder="Search articles by title, topic, or keyword" />
       </section>
 
       <section className="topic-grid">
         {Object.entries(grouped).map(([category, categoryArticles]) => (
           <div key={category} className="topic-card">
-            <h2>{category}</h2>
+            <div className="topic-card-header">
+              <span className="topic-badge">{categoryArticles.length}</span>
+              <h2>{category}</h2>
+            </div>
             <div className="article-list">
               {categoryArticles.map((article) => (
                 <Link key={article.slug} to={`/article/${article.slug}`}>
@@ -114,11 +135,15 @@ function ArticlePage() {
 function EditorDashboard() {
   return (
     <main className="container page-space">
-      <h1>Editor Dashboard</h1>
+      <div className="page-heading">
+        <p className="eyebrow">Editor tools</p>
+        <h1>Editor Dashboard</h1>
+      </div>
+
       <div className="dashboard-grid">
         <div className="panel">
           <h2>My Drafts</h2>
-          <ul>
+          <ul className="stack-list">
             <li>How black holes form</li>
             <li>Cello maintenance and care</li>
             <li>History of paper manufacturing</li>
@@ -127,10 +152,10 @@ function EditorDashboard() {
 
         <div className="panel">
           <h2>Topic Access</h2>
-          <ul>
+          <ul className="stack-list">
             {editors.map((editor) => (
               <li key={editor.id}>
-                {editor.name} — {editor.topics.join(', ')}
+                <strong>{editor.name}</strong> — {editor.topics.join(', ')}
               </li>
             ))}
           </ul>
@@ -143,12 +168,16 @@ function EditorDashboard() {
 function ReviewQueue() {
   return (
     <main className="container page-space">
-      <h1>Peer Review Queue</h1>
+      <div className="page-heading">
+        <p className="eyebrow">Peer review</p>
+        <h1>Review Queue</h1>
+      </div>
+
       <div className="review-list">
         {reviewQueue.map((item) => (
           <article key={item.id} className="review-card">
             <div>
-              <p className="eyebrow">{item.status}</p>
+              <p className="eyebrow subtle">{item.status}</p>
               <h2>{item.title}</h2>
               <p>{item.summary}</p>
             </div>
@@ -166,14 +195,18 @@ function ReviewQueue() {
 function AdminPanel() {
   return (
     <main className="container page-space">
-      <h1>Admin Panel</h1>
+      <div className="page-heading">
+        <p className="eyebrow">Control center</p>
+        <h1>Admin Panel</h1>
+      </div>
+
       <div className="dashboard-grid">
         <div className="panel">
           <h2>Pending Editor Requests</h2>
-          <ul>
+          <ul className="stack-list">
             {editorRequests.map((request) => (
               <li key={request.id}>
-                {request.name} — {request.topic} — {request.status}
+                <strong>{request.name}</strong> — {request.topic} — {request.status}
               </li>
             ))}
           </ul>
@@ -181,10 +214,10 @@ function AdminPanel() {
 
         <div className="panel">
           <h2>Access Control</h2>
-          <ul>
+          <ul className="stack-list">
             <li>Admin: full control</li>
-            <li>Editors: topic-specific permissions</li>
-            <li>Reviewers: approval rights</li>
+            <li>Editors: topic-based permissions</li>
+            <li>Reviewers: approval workflow</li>
           </ul>
         </div>
       </div>
@@ -195,7 +228,11 @@ function AdminPanel() {
 function RequestEditorPage() {
   return (
     <main className="container page-space">
-      <h1>Request to be an Editor</h1>
+      <div className="page-heading narrow">
+        <p className="eyebrow">Join the team</p>
+        <h1>Request to be an Editor</h1>
+      </div>
+
       <form className="request-form">
         <label>
           Name
@@ -211,7 +248,7 @@ function RequestEditorPage() {
         </label>
         <label>
           Why do you want to contribute?
-          <textarea rows="5" placeholder="Tell us about yourself and your interests." />
+          <textarea rows="5" placeholder="Tell us about your interests, expertise, and how you’d like to help." />
         </label>
         <button type="submit" className="primary-btn">
           Submit request
